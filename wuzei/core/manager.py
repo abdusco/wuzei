@@ -8,22 +8,23 @@ from .blur import blur
 
 
 class WallpaperManager:
-    def __init__(self, paths: typing.List[str],
-                 cache_dir: str = None):
-        if not paths:
+    def __init__(self,
+                 paths: typing.List[str],
+                 cache_dir: str,
+                 start_blurred: bool = True,
+                 start_shuffled: bool = True):
+        if not paths or not cache_dir:
             raise ValueError('Specify at least one path')
-        if not cache_dir:
-            cache_dir = tempfile.gettempdir()
 
         self._cache_dir = cache_dir
+        self._blurred = start_blurred
+        self._shuffled = start_shuffled
         self._wallpaper: str = None
         self._source: str = None
-        self._shuffled = True
-        self._blurred = True
         self._screen_geometry = windesktop.get_screen_size()
 
-        self.paths = Dispenser(paths)
-        self.source = self.paths.current
+        self.sources = Dispenser(paths)
+        self.source = self.sources.current
 
     @property
     def wallpaper(self):
@@ -49,10 +50,10 @@ class WallpaperManager:
             self.wallpaper = self.images.current
 
     def next_source(self):
-        self.source = self.paths + 1
+        self.source = self.sources + 1
 
     def prev_source(self):
-        self.source = self.paths - 1
+        self.source = self.sources - 1
 
     def next_wallpaper(self):
         next = self.images + 1

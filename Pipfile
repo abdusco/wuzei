@@ -8,6 +8,7 @@ wxpython = "*"
 keyboard = "*"
 pywin32 = "*"
 Pillow = "*"
+pymitter = "*"
 
 [dev-packages]
 
