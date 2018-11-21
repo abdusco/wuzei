@@ -6,21 +6,25 @@ from wuzei.app import Wuzei
 from wuzei.app.config import WuzeiConfig
 from wuzei.utils.singleton import singleton
 
-def get_args():
+
+def get_parser() -> ArgumentParser:
     parser = ArgumentParser(prog='Wuzei',
                             description='Wallpaper manager for Windows')
     parser.add_argument('config_file',
                         action='store',
                         help='path to config.ini file',
+                        nargs='?',
                         default='./config.ini')
-    return parser.parse_args()
+    return parser
 
 
 def main():
-    args = get_args()
+    parser = get_parser()
+    args = parser.parse_args()
     config_path = Path(args.config_file)
     if not config_path.exists():
-        sys.stderr.write(f'Cannot access config file: {config_path.absolute()}')
+        sys.stderr.write(f'Cannot access config file: {config_path.absolute()}\n')
+        parser.print_help()
         exit(1)
 
     config = WuzeiConfig(config_path)
