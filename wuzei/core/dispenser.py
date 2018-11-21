@@ -1,4 +1,4 @@
-from random import shuffle
+from random import shuffle, randrange
 
 
 class Dispenser:
@@ -12,6 +12,10 @@ class Dispenser:
 
     @property
     def current(self):
+        return self.things[self.pos]
+
+    def random(self):
+        self.pos = randrange(self.max)
         return self.things[self.pos]
 
     def shuffle(self):

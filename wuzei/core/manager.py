@@ -44,10 +44,16 @@ class WallpaperManager:
         self._source = value
         self.images = Dispenser(find_images(value),
                                 shuffled=self._shuffled)
-        if self._blurred:
-            self.blur(image_path=self.images.current)
+
+        if self._shuffled:
+            image = self.images.random()
         else:
-            self.wallpaper = self.images.current
+            image = self.images.current
+
+        if self._blurred:
+            self.blur(image_path=image)
+        else:
+            self.wallpaper = image
 
     def next_source(self):
         self.source = self.sources + 1

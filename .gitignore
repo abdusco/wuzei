@@ -3,5 +3,6 @@
 dist
 build
 config.ini
-run.spec
-wuzei.lock
+*.spec
+*.lock
+build.bat
