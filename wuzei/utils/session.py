@@ -73,13 +73,13 @@ class SessionMonitor:
             return True
 
     def _handle_session_change(self, event: SessionEvent, session_id: int):
-        for handler in self.event_handlers[event]:
-            handler(event)
-        for handler in self.event_handlers[SessionEvent.ANY]:
-            handler(event)
+        for handler, args, kwargs in self.event_handlers[event]:
+            handler(*args, **kwargs)
+        for handler, args, kwargs in self.event_handlers[SessionEvent.ANY]:
+            handler(*args, **kwargs)
 
-    def subscribe(self, event: SessionEvent, handler: callable):
-        self.event_handlers[event].append(handler)
+    def subscribe(self, event: SessionEvent, handler: callable, *args, **kwargs):
+        self.event_handlers[event].append((handler, args, kwargs))
 
 
 if __name__ == '__main__':
