@@ -1,3 +1,7 @@
 .venv
 .idea
+dist
+build
 config.ini
+run.spec
+wuzei.lock
