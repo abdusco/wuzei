@@ -38,6 +38,7 @@ def enable_active_desktop():
 def change_wallpaper(abs_path_to_image: str, activate_active_desktop: bool = False):
     if activate_active_desktop:
         enable_active_desktop()
+    pythoncom.CoInitialize()
     iad = pythoncom.CoCreateInstance(shell.CLSID_ActiveDesktop,
                                      None,
                                      pythoncom.CLSCTX_INPROC_SERVER,

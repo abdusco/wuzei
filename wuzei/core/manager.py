@@ -1,7 +1,7 @@
 import pathlib
 import typing
 import tempfile
-from wuzei.utils import activedesktop as ad
+from wuzei.utils import windesktop
 from wuzei.utils.finder import find_images
 from .dispenser import Dispenser
 from .blur import blur
@@ -20,7 +20,7 @@ class WallpaperManager:
         self._source: str = None
         self._shuffled = True
         self._blurred = True
-        self._screen_geometry = ad.get_screen_size()
+        self._screen_geometry = windesktop.get_screen_size()
 
         self.paths = Dispenser(paths)
         self.source = self.paths.current
@@ -101,4 +101,4 @@ class WallpaperManager:
         if not pathlib.Path(image_path).exists():
             raise FileNotFoundError(image_path)
         print('WP:', image_path)
-        ad.change_wallpaper(image_path, True)
+        windesktop.change_wallpaper(image_path, True)
