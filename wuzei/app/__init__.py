@@ -71,6 +71,7 @@ class Wuzei:
 
     def _on_timer(self):
         print('TIMER')
+        keyboard.stash_state()
         self.manager.next_wallpaper()
 
     def _on_lock(self):
