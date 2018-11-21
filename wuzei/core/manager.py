@@ -69,9 +69,9 @@ class WallpaperManager:
 
     def toggle_shuffle(self):
         if self._shuffled:
-            self.images.shuffle()
-        else:
             self.images.unshuffle()
+        else:
+            self.images.shuffle()
         self._shuffled = not self._shuffled
 
     def blur(self, image_path: str = None):
