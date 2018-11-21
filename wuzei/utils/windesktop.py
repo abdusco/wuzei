@@ -2,6 +2,29 @@ import ctypes
 from win32com.shell import shell, shellcon
 from win32api import GetSystemMetrics
 import pythoncom
+import win32com
+import win32gui
+
+
+def get_processes():
+    wmi = win32com.client.GetObject('winmgmts:')
+    processes = {}
+    for p in wmi.InstancesOf('win32_process'):
+        processes[p.ProcessID] = p.Name
+    return processes
+
+
+def get_window_handles() -> list:
+    def cb(handle, argument):
+        argument.append(handle)
+
+    argument = []
+    win32gui.EnumWindows(cb, argument)
+    return argument
+
+
+def get_window_class(window_handle: int):
+    return win32gui.GetClassName(window_handle)
 
 
 def get_screen_size():

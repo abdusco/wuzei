@@ -1,9 +1,12 @@
+from time import time
 from collections import defaultdict
 from enum import Enum
+from pywintypes import error as Win32Error
 import win32api
 import win32con
 import win32gui
 import win32ts
+from .windesktop import get_window_handles, get_window_class
 
 
 class SessionEvent(Enum):
@@ -28,18 +31,24 @@ class SessionMonitor:
 
     def __init__(self):
         self.window_handle = None
+        self.window_class = f'{self.CLASS_NAME}{int(time())}'
         self.event_handlers = defaultdict(list)
         self._register_listener()
 
     def _register_listener(self):
         wc = win32gui.WNDCLASS()
+
+        # From: https://docs.microsoft.com/en-us/windows/desktop/api/libloaderapi/nf-libloaderapi-getmodulehandlea
+        # If this parameter is NULL, GetModuleHandle returns a handle
+        # to the file used to create the calling process (.exe file).
         wc.hInstance = handle_instance = win32api.GetModuleHandle(None)
-        wc.lpszClassName = self.CLASS_NAME
+
+        wc.lpszClassName = self.window_class
         wc.lpfnWndProc = self._window_procedure
-        window_class = win32gui.RegisterClass(wc)
+        class_atom = win32gui.RegisterClass(wc)
 
         style = 0
-        self.window_handle = win32gui.CreateWindow(window_class,
+        self.window_handle = win32gui.CreateWindow(class_atom,
                                                    self.WINDOW_TITLE,
                                                    style,
                                                    0, 0, win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT,
@@ -49,6 +58,14 @@ class SessionMonitor:
         # scope = win32ts.NOTIFY_FOR_THIS_SESSION
         scope = win32ts.NOTIFY_FOR_ALL_SESSIONS
         win32ts.WTSRegisterSessionNotification(self.window_handle, scope)
+
+    def _clean_up(self):
+        for handle in get_window_handles():
+            window_class = get_window_class(handle)
+            if self.CLASS_NAME not in window_class:
+                continue
+            win32gui.CloseWindow(handle)
+            win32gui.UnregisterClass(self.CLASS_NAME, handle)
 
     def listen(self):
         win32gui.PumpMessages()
