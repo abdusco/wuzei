@@ -7,6 +7,7 @@ from pymitter import EventEmitter
 from wuzei.utils.session import SessionEvent, SessionMonitor
 from wuzei.core.manager import WallpaperManager
 from wuzei.app.config import WuzeiConfig
+from wuzei.utils.singleton import InterruptibleEvent
 
 
 class Action(Enum):
@@ -32,6 +33,8 @@ class Wuzei:
         self.ee.on('hotkey', self._on_hotkey)
         self.ee.on('timer', self._on_timer)
         self.threads = []
+        self.running_event = InterruptibleEvent()
+        self.last_change = time.time()
 
         self.paused = config.start_paused
         self.interval = config.interval
@@ -64,8 +67,10 @@ class Wuzei:
         sm.listen()
 
     def _setup_timer(self):
-        while True:
+        while True and self.interval > 0:
             time.sleep(self.interval)
+            if abs(time.time() - self.last_change) < self.interval:
+                continue
             if not self.paused:
                 self.ee.emit('timer')
 
@@ -94,11 +99,13 @@ class Wuzei:
             'pause': self.pause,
         }
         handlers[action]()
+        self.last_change = time.time()
 
     def pause(self):
         self.paused = not self.paused
 
     def exit(self):
+        self.running_event.set()
         print('Bye')
         os._exit(0)
 
@@ -110,3 +117,5 @@ class Wuzei:
         self.threads = [th_session, th_kb, th_timer]
         for th in self.threads:
             th.start()
+
+        self.running_event.wait()
