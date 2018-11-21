@@ -87,6 +87,11 @@ class Wuzei:
         print('UNLOCKED')
         keyboard.stash_state()
 
+    def _rehook(self):
+        while True:
+            time.sleep(5)
+            keyboard.stash_state()
+
     def _on_hotkey(self, action: Action):
         print('HOTKEY', action)
         handlers = {
@@ -103,6 +108,7 @@ class Wuzei:
 
     def pause(self):
         self.paused = not self.paused
+        print('PAUSED' if self.paused else 'RUNNING')
 
     def exit(self):
         self.running_event.set()
@@ -113,8 +119,9 @@ class Wuzei:
         th_session = threading.Thread(target=self._monitor_session)
         th_kb = threading.Thread(target=self._monitor_hotkeys)
         th_timer = threading.Thread(target=self._setup_timer)
+        th_rehook_hotkeys = threading.Thread(target=self._rehook)
 
-        self.threads = [th_session, th_kb, th_timer]
+        self.threads = [th_session, th_kb, th_timer, th_rehook_hotkeys]
         for th in self.threads:
             th.start()
 
