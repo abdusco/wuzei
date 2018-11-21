@@ -12,7 +12,7 @@ class InterruptibleEvent(threading.Event):
 
 
 def singleton(callback: callable, instance_name: str):
-    tempdir = Path('.')
+    tempdir = Path(tempfile.gettempdir())
     lockfile = tempdir / f'{instance_name}.lock'
     try:
         if lockfile.exists():
