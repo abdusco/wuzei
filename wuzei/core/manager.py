@@ -1,10 +1,10 @@
 import pathlib
 import typing
-import tempfile
+
 from wuzei.utils import windesktop
 from wuzei.utils.finder import find_images
-from .dispenser import Dispenser
 from .blur import blur
+from .dispenser import Dispenser
 
 
 class WallpaperManager:

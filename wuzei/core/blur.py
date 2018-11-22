@@ -1,6 +1,7 @@
+from pathlib import Path
+
 from PIL import Image
 from PIL.ImageFilter import GaussianBlur
-from pathlib import Path
 
 
 def blur(image_path: str, size: tuple, radius=200, save_dir: str = None, use_cache=True) -> Path:

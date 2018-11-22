@@ -1,7 +1,7 @@
-import tempfile
 import os
-from pathlib import Path
+import tempfile
 import threading
+from pathlib import Path
 
 
 class InterruptibleEvent(threading.Event):

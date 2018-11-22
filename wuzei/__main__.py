@@ -1,7 +1,8 @@
 import sys
 import tempfile
-from pathlib import Path
 from argparse import ArgumentParser
+from pathlib import Path
+
 from wuzei.app import Wuzei
 from wuzei.app.config import WuzeiConfig
 from wuzei.utils.singleton import singleton
