@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 keyboard = "*"
+mouse = "*"
 pywin32 = "*"
 Pillow = "*"
 pymitter = "*"

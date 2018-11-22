@@ -1,13 +1,17 @@
-import time
 import os
 import threading
+import time
 from enum import Enum, auto
+
 import keyboard
+import mouse
 from pymitter import EventEmitter
-from wuzei.utils.session import SessionEvent, SessionMonitor
-from wuzei.core.manager import WallpaperManager
+
 from wuzei.app.config import WuzeiConfig
+from wuzei.core.manager import WallpaperManager
+from wuzei.utils.session import SessionEvent, SessionMonitor
 from wuzei.utils.singleton import InterruptibleEvent
+from wuzei.utils.windesktop import WindowSpy
 
 
 class Action(Enum):
@@ -76,7 +80,6 @@ class Wuzei:
 
     def _on_timer(self):
         print('TIMER')
-        keyboard.stash_state()
         self.manager.next_wallpaper()
 
     def _on_lock(self):
@@ -87,10 +90,24 @@ class Wuzei:
         print('UNLOCKED')
         keyboard.stash_state()
 
+    def _on_desktop_click(self):
+        print('DESKTOP CLICKED')
+        self.manager.toggle_blur()
+
     def _rehook(self):
         while True:
             time.sleep(5)
             keyboard.stash_state()
+
+    def _hook_mouse(self):
+        desktop = WindowSpy.desktop()
+
+        def cb():
+            if not desktop.is_under_mouse:
+                return
+            self._on_desktop_click()
+
+        mouse.on_double_click(cb)
 
     def _on_hotkey(self, action: Action):
         print('HOTKEY', action)
@@ -116,13 +133,15 @@ class Wuzei:
         os._exit(0)
 
     def run(self):
-        th_session = threading.Thread(target=self._monitor_session)
-        th_kb = threading.Thread(target=self._monitor_hotkeys)
-        th_timer = threading.Thread(target=self._setup_timer)
-        th_rehook_hotkeys = threading.Thread(target=self._rehook)
+        threads = dict(
+            session=threading.Thread(target=self._monitor_session),
+            keyboard=threading.Thread(target=self._monitor_hotkeys),
+            timer=threading.Thread(target=self._setup_timer),
+            rehook=threading.Thread(target=self._rehook),
+            mouse=threading.Thread(target=self._hook_mouse),
+        )
 
-        self.threads = [th_session, th_kb, th_timer, th_rehook_hotkeys]
-        for th in self.threads:
+        self.threads = threads
+        for name, th in threads.items():
             th.start()
-
         self.running_event.wait()

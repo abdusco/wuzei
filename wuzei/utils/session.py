@@ -1,12 +1,13 @@
-from time import time
-from collections import defaultdict
-from enum import Enum
-from pywintypes import error as Win32Error
 import win32api
-import win32con
 import win32gui
 import win32ts
-from .windesktop import get_window_handles, get_window_class
+from collections import defaultdict
+from enum import Enum
+from time import time
+
+import win32con
+
+from .windesktop import WindowSpy
 
 
 class SessionEvent(Enum):
@@ -60,9 +61,9 @@ class SessionMonitor:
         win32ts.WTSRegisterSessionNotification(self.window_handle, scope)
 
     def _clean_up(self):
-        for handle in get_window_handles():
-            window_class = get_window_class(handle)
-            if self.CLASS_NAME not in window_class:
+        for handle in WindowSpy.get_all_handles():
+            w = WindowSpy(handle)
+            if self.CLASS_NAME not in w.window_class:
                 continue
             win32gui.CloseWindow(handle)
             win32gui.UnregisterClass(self.CLASS_NAME, handle)
