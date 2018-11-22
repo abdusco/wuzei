@@ -92,7 +92,9 @@ class Wuzei:
 
     def _on_desktop_click(self):
         print('DESKTOP CLICKED')
-        self.manager.toggle_blur()
+        desktop = WindowSpy.desktop()
+        if desktop.is_under_mouse:
+            self.manager.toggle_blur()
 
     def _rehook(self):
         while True:
@@ -100,14 +102,7 @@ class Wuzei:
             keyboard.stash_state()
 
     def _hook_mouse(self):
-        desktop = WindowSpy.desktop()
-
-        def cb():
-            if not desktop.is_under_mouse:
-                return
-            self._on_desktop_click()
-
-        mouse.on_double_click(cb)
+        mouse.on_double_click(self._on_desktop_click)
 
     def _on_hotkey(self, action: Action):
         print('HOTKEY', action)

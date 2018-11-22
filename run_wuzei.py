@@ -1,3 +1,3 @@
-from wuzei.__main__ import main
+from wuzei.__main__ import wuzei_singleton
 
-main()
+wuzei_singleton()

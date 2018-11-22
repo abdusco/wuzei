@@ -11,7 +11,7 @@ class InterruptibleEvent(threading.Event):
                 break
 
 
-def singleton(callback: callable, instance_name: str):
+def run_as_singleton(callback: callable, instance_name: str):
     tempdir = Path(tempfile.gettempdir())
     lockfile = tempdir / f'{instance_name}.lock'
     try:

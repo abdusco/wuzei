@@ -5,7 +5,7 @@ from pathlib import Path
 
 from wuzei.app import Wuzei
 from wuzei.app.config import WuzeiConfig
-from wuzei.utils.singleton import singleton
+from wuzei.utils.singleton import run_as_singleton
 
 
 def get_parser() -> ArgumentParser:
@@ -47,5 +47,10 @@ def main():
         w.run()
 
 
-singleton(main,
-          instance_name='wuzei')
+def wuzei_singleton():
+    run_as_singleton(callback=main,
+                     instance_name='wuzei')
+
+
+if __name__ == '__main__':
+    wuzei_singleton()
