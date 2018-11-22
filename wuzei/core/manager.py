@@ -11,14 +11,18 @@ class WallpaperManager:
     def __init__(self,
                  paths: typing.List[str],
                  cache_dir: str,
-                 start_blurred: bool = True,
-                 start_shuffled: bool = True):
+                 blurred: bool = True,
+                 shuffled: bool = True,
+                 logger=None):
+        if not logger:
+            logger = print
         if not paths or not cache_dir:
             raise ValueError('Specify at least one path')
 
+        self.logger = logger
         self._cache_dir = cache_dir
-        self._blurred = start_blurred
-        self._shuffled = start_shuffled
+        self._blurred = blurred
+        self._shuffled = shuffled
         self._wallpaper: str = None
         self._source: str = None
         self._screen_geometry = windesktop.get_screen_size()

@@ -30,7 +30,12 @@ class Action(Enum):
 
 
 class Wuzei:
-    def __init__(self, config: WuzeiConfig):
+    def __init__(self,
+                 config: WuzeiConfig,
+                 logger=None):
+        if not logger:
+            logger = print
+        self.logger = logger
         self.ee = EventEmitter()
         self.ee.on('lock', self._on_lock)
         self.ee.on('unlock', self._on_unlock)
@@ -40,14 +45,14 @@ class Wuzei:
         self.running_event = InterruptibleEvent()
         self.last_change = time.time()
 
-        self.paused = config.start_paused
+        self.paused = config.paused
         self.interval = config.interval
 
         sources = [path for key, path in config.sources.items()]
         self.manager = WallpaperManager(paths=sources,
                                         cache_dir=config.cache_dir,
-                                        start_blurred=config.start_blurred,
-                                        start_shuffled=config.start_shuffled)
+                                        blurred=config.blurred,
+                                        shuffled=config.shuffled)
 
     def _monitor_hotkeys(self):
         hotkeys = {
@@ -79,33 +84,33 @@ class Wuzei:
                 self.ee.emit('timer')
 
     def _on_timer(self):
-        print('TIMER')
+        self.logger('TIMER')
         self.manager.next_wallpaper()
 
     def _on_lock(self):
-        print('LOCKED')
+        self.logger('LOCKED')
         self.manager.blur()
 
     def _on_unlock(self):
-        print('UNLOCKED')
+        self.logger('UNLOCKED')
         keyboard.stash_state()
 
     def _on_desktop_click(self):
-        print('DESKTOP CLICKED')
+        self.logger('DESKTOP CLICKED')
         desktop = WindowSpy.desktop()
         if desktop.is_under_mouse:
             self.manager.toggle_blur()
 
     def _rehook(self):
         while True:
-            time.sleep(5)
+            time.sleep(60)
             keyboard.stash_state()
 
     def _hook_mouse(self):
         mouse.on_double_click(self._on_desktop_click)
 
     def _on_hotkey(self, action: Action):
-        print('HOTKEY', action)
+        self.logger('HOTKEY', action)
         handlers = {
             Action.PREV_WALLPAPER: self.manager.prev_wallpaper,
             Action.NEXT_WALLPAPER: self.manager.next_wallpaper,
@@ -120,11 +125,11 @@ class Wuzei:
 
     def pause(self):
         self.paused = not self.paused
-        print('PAUSED' if self.paused else 'RUNNING')
+        self.logger('PAUSED' if self.paused else 'RUNNING')
 
     def exit(self):
         self.running_event.set()
-        print('Bye')
+        self.logger('Bye')
         os._exit(0)
 
     def run(self):

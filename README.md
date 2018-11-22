@@ -15,9 +15,9 @@ python -m wuzei config.ini
 [config]
 cache_dir = d:\wallpapers\.cache
 interval = 20
-start_blurred = yes
-start_shuffled = yes
-start_paused = no
+blurred = yes
+shuffled = yes
+paused = no
 
 [sources]
 nature = d:\wallpapers\nature

@@ -9,9 +9,9 @@ class WuzeiConfig:
 
         self.sources: typing.Dict[str, str] = dict(parsed['sources'])
         self.cache_dir: str = parsed['config'].get('cache_dir', '')
-        self.start_blurred: bool = parsed['config'].getboolean('start_blurred', True)
-        self.start_shuffled: bool = parsed['config'].getboolean('start_shuffled', True)
-        self.start_paused: bool = parsed['config'].getboolean('start_paused', False)
+        self.blurred: bool = parsed['config'].getboolean('blurred', True)
+        self.shuffled: bool = parsed['config'].getboolean('shuffled', True)
+        self.paused: bool = parsed['config'].getboolean('paused', False)
         # set interval to min 30 seconds
         self.interval: int = max(30, parsed['config'].getint('interval', 60 * 10))
 
