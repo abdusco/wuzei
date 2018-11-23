@@ -28,6 +28,8 @@ class Action(Enum):
     UNSHUFFLE = auto()
     TOGGLE_SHUFFLE = auto()
 
+    PAUSE = auto()
+
 
 class Wuzei:
     def __init__(self,
@@ -56,8 +58,10 @@ class Wuzei:
 
     def _monitor_hotkeys(self):
         hotkeys = {
-            'alt+shift+left': Action.PREV_WALLPAPER,
-            'alt+shift+right': Action.NEXT_WALLPAPER,
+            'alt+shift+[': Action.PREV_WALLPAPER,
+            'alt+shift+]': Action.NEXT_WALLPAPER,
+            'ctrl+alt+shift+[': Action.PREV_SOURCE,
+            'ctrl+alt+shift+]': Action.NEXT_SOURCE,
             'alt+shift+s': Action.TOGGLE_SHUFFLE,
             'alt+shift+b': Action.TOGGLE_BLUR,
             'alt+shift+/': Action.BLUR,
@@ -111,17 +115,30 @@ class Wuzei:
 
     def _on_hotkey(self, action: Action):
         self.logger('HOTKEY', action)
-        handlers = {
-            Action.PREV_WALLPAPER: self.manager.prev_wallpaper,
-            Action.NEXT_WALLPAPER: self.manager.next_wallpaper,
-            Action.TOGGLE_SHUFFLE: self.manager.toggle_shuffle,
-            Action.TOGGLE_BLUR: self.manager.toggle_blur,
-            Action.BLUR: self.manager.blur,
-            'exit': self.exit,
-            'pause': self.pause,
-        }
-        handlers[action]()
-        self.last_change = time.time()
+        if action == 'exit':
+            self.exit()
+        elif action == 'pause':
+            self.pause()
+        else:
+            self.handle_action(action)
+
+    def handle_action(self, action: Action):
+        try:
+            handlers = {
+                Action.PREV_WALLPAPER: self.manager.prev_wallpaper,
+                Action.NEXT_WALLPAPER: self.manager.next_wallpaper,
+                Action.PREV_SOURCE: self.manager.prev_source,
+                Action.NEXT_SOURCE: self.manager.next_source,
+                Action.TOGGLE_SHUFFLE: self.manager.toggle_shuffle,
+                Action.TOGGLE_BLUR: self.manager.toggle_blur,
+                Action.BLUR: self.manager.blur,
+                Action.PAUSE: self.pause
+            }
+            handlers[action]()
+            self.last_change = time.time()
+        except KeyError:
+            self.logger('Unhandled action', action)
+            raise NotImplementedError
 
     def pause(self):
         self.paused = not self.paused
