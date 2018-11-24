@@ -2,7 +2,8 @@ import os
 import threading
 import time
 from enum import Enum, auto
-from functools import  partial
+from functools import partial
+
 import keyboard
 import mouse
 from pymitter import EventEmitter
@@ -123,11 +124,13 @@ class Wuzei:
         self.logger('UNLOCKED')
         keyboard.stash_state()
 
-    def _on_desktop_click(self):
-        self.logger('DESKTOP CLICKED')
-        desktop = WindowSpy.desktop()
+    def _on_mouse(self, desktop: WindowSpy, taskbar: WindowSpy):
         if desktop.is_under_mouse:
+            self.logger('DESKTOP CLICKED')
             self.manager.toggle_blur()
+        if taskbar.is_under_mouse:
+            self.logger('TASKBAR CLICKED')
+            self.manager.blur()
 
     def _rehook(self):
         while True:
@@ -135,7 +138,9 @@ class Wuzei:
             keyboard.stash_state()
 
     def _hook_mouse(self):
-        mouse.on_double_click(self._on_desktop_click)
+        desktop = WindowSpy.desktop()
+        taskbar = WindowSpy.taskbar()
+        mouse.on_double_click(self._on_mouse, args=(desktop, taskbar))
 
     def _on_hotkey(self, action: Action):
         self.logger('HOTKEY', action)
