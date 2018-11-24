@@ -130,7 +130,10 @@ class Wuzei:
             self.manager.toggle_blur()
         if taskbar.is_under_mouse:
             self.logger('TASKBAR CLICKED')
-            self.manager.blur()
+            if keyboard.is_pressed('alt'):
+                self.manager.blur()
+            else:
+                self.manager.toggle_blur()
 
     def _rehook(self):
         while True:
