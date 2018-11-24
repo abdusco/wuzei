@@ -3,7 +3,6 @@ import win32gui
 import win32ts
 from collections import defaultdict
 from enum import Enum
-from time import time
 
 import win32con
 
@@ -27,46 +26,41 @@ class SessionEvent(Enum):
 
 
 class SessionMonitor:
-    CLASS_NAME = "SessionMonitor"
-    WINDOW_TITLE = "Session Event Monitor"
-
     def __init__(self):
-        self.window_handle = None
-        self.window_class = f'{self.CLASS_NAME}{int(time())}'
-        self.event_handlers = defaultdict(list)
+        self.h_window = self.h_instance = None
+        self._window_class = 'SessionMonitor'
+        self._title = 'Session Event Monitor'
+        self._listeners = defaultdict(list)
         self._register_listener()
 
     def _register_listener(self):
-        wc = win32gui.WNDCLASS()
+        w_class_struct = win32gui.WNDCLASS()
 
         # From: https://docs.microsoft.com/en-us/windows/desktop/api/libloaderapi/nf-libloaderapi-getmodulehandlea
         # If this parameter is NULL, GetModuleHandle returns a handle
         # to the file used to create the calling process (.exe file).
-        wc.hInstance = handle_instance = win32api.GetModuleHandle(None)
+        self.h_instance = w_class_struct.hInstance = win32api.GetModuleHandle(None)
 
-        wc.lpszClassName = self.window_class
-        wc.lpfnWndProc = self._window_procedure
-        class_atom = win32gui.RegisterClass(wc)
+        w_class_struct.lpszClassName = self._window_class
+        w_class_struct.lpfnWndProc = self._window_procedure
+        atom = win32gui.RegisterClass(w_class_struct)
 
         style = 0
-        self.window_handle = win32gui.CreateWindow(class_atom,
-                                                   self.WINDOW_TITLE,
-                                                   style,
-                                                   0, 0, win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT,
-                                                   0, 0, handle_instance, None)
-        win32gui.UpdateWindow(self.window_handle)
+        self.h_window = win32gui.CreateWindow(atom,
+                                              self._title,
+                                              style,
+                                              0, 0, win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT,
+                                              0, 0, self.h_instance, None)
+        win32gui.UpdateWindow(self.h_window)
 
         # scope = win32ts.NOTIFY_FOR_THIS_SESSION
         scope = win32ts.NOTIFY_FOR_ALL_SESSIONS
-        win32ts.WTSRegisterSessionNotification(self.window_handle, scope)
+        win32ts.WTSRegisterSessionNotification(self.h_window, scope)
 
     def _clean_up(self):
-        for handle in WindowSpy.get_all_handles():
-            w = WindowSpy(handle)
-            if self.CLASS_NAME not in w.window_class:
-                continue
-            win32gui.CloseWindow(handle)
-            win32gui.UnregisterClass(self.CLASS_NAME, handle)
+        for h_window in WindowSpy.find_handles(class_name=self._window_class):
+            win32gui.CloseWindow(h_window)
+        win32gui.UnregisterClass(self._window_class, self.h_instance)
 
     def listen(self):
         win32gui.PumpMessages()
@@ -91,13 +85,13 @@ class SessionMonitor:
             return True
 
     def _handle_session_change(self, event: SessionEvent, session_id: int):
-        for handler, args, kwargs in self.event_handlers[event]:
+        for handler, args, kwargs in self._listeners[event]:
             handler(*args, **kwargs)
-        for handler, args, kwargs in self.event_handlers[SessionEvent.ANY]:
+        for handler, args, kwargs in self._listeners[SessionEvent.ANY]:
             handler(*args, **kwargs)
 
     def subscribe(self, event: SessionEvent, handler: callable, *args, **kwargs):
-        self.event_handlers[event].append((handler, args, kwargs))
+        self._listeners[event].append((handler, args, kwargs))
 
 
 if __name__ == '__main__':

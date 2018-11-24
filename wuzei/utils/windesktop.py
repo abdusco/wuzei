@@ -44,53 +44,73 @@ class WindowSpy:
     def __eq__(self, other):
         return self.h_window == other.h_window
 
-    @staticmethod
-    def get_all_handles() -> list:
-        def cb(handle, argument):
-            argument.append(handle)
-
-        argument = []
-        win32gui.EnumWindows(cb, argument)
-        return argument
-
     @classmethod
     def from_mouse_pos(cls):
         h_window = win32gui.WindowFromPoint(win32api.GetCursorPos())
         return cls(h_window)
 
     @classmethod
+    def _make_filter_cb(cls, class_name, title):
+        def filter_cb(handle, h_list):
+            if not (class_name or title):
+                h_list.append(handle)
+            w = cls(handle)
+            if class_name:
+                if w.window_class != class_name:
+                    return True  # continue enumeration
+            if title:
+                if w.title != title:
+                    return True  # continue enumeration
+            h_list.append(handle)
+
+        return filter_cb
+
+    @classmethod
+    def find_handles(cls, class_name: str = None, title: str = None) -> list:
+        cb = cls._make_filter_cb(class_name, title)
+        try:
+            handle_list = []
+            win32gui.EnumWindows(cb, handle_list)
+            return handle_list
+        except pywintypes.error as e:
+            return []
+
+    def find_children(self, class_name: str = None, title: str = None) -> list:
+        cb = self._make_filter_cb(class_name, title)
+        try:
+            handle_list = []
+            win32gui.EnumChildWindows(self.h_window, cb, handle_list)
+            return handle_list
+        except pywintypes.error as e:
+            return []
+
+    @classmethod
+    def find(cls, class_name: str, title: str = ''):
+        try:
+            return cls(cls.find_handles(class_name, title)[0])
+        except IndexError:
+            return None
+
+    def find_child(self, class_name: str, title: str = ''):
+        try:
+            return self.__class__(self.find_children(class_name, title)[0])
+        except IndexError:
+            return None
+
+    @classmethod
     def desktop(cls):
-        """
-        Returns window handle to desktop (where icons live)
+        for h_worker in cls.find_handles(class_name='WorkerW'):
+            worker = cls(h_worker)
+            folder_view = worker.find_child(class_name='SysListView32', title='FolderView')
+            if not folder_view:
+                continue
+            return folder_view
+        return None
 
-        Read: https://stackoverflow.com/a/5691808
-
-        :return: desktop handle
-        """
-
-        def _callback(hwnd, extra):
-            if win32gui.GetClassName(hwnd) == "WorkerW":
-                child = win32gui.FindWindowEx(hwnd, 0, "SHELLDLL_DefView", "")
-                if child != 0:
-                    sys_listview = win32gui.FindWindowEx(child, 0, "SysListView32", "FolderView")
-                    extra.append(sys_listview)
-                    return False
-            return True
-
-        """Get the window of the icons, the desktop window contains this window"""
-        h_shell = ctypes.windll.user32.GetShellWindow()
-        shell_dll_defview = win32gui.FindWindowEx(h_shell, 0, "SHELLDLL_DefView", "")
-        if shell_dll_defview == 0:
-            sys_listview_container = []
-            try:
-                win32gui.EnumWindows(_callback, sys_listview_container)
-            except pywintypes.error as e:
-                if e.winerror != 0:
-                    raise
-            sys_listview = sys_listview_container[0]
-        else:
-            sys_listview = win32gui.FindWindowEx(shell_dll_defview, 0, "SysListView32", "FolderView")
-        return cls(sys_listview)
+    @classmethod
+    def taskbar(cls):
+        w_tray = cls.find(class_name='Shell_TrayWnd')
+        return w_tray.find_child(class_name='MSTaskListWClass')
 
 
 def get_processes():
