@@ -2,7 +2,7 @@ import os
 import threading
 import time
 from enum import Enum, auto
-
+from functools import  partial
 import keyboard
 import mouse
 from pymitter import EventEmitter
@@ -39,7 +39,7 @@ class Wuzei:
                  config: WuzeiConfig,
                  logger=None):
         if not logger:
-            logger = print
+            logger = partial(print, sep='\t')
         self.logger = logger
         self.ee = EventEmitter()
         self.ee.on('lock', self._on_lock)
@@ -57,7 +57,8 @@ class Wuzei:
         self.manager = WallpaperManager(paths=self._sources,
                                         cache_dir=config.cache_dir,
                                         blurred=config.blurred,
-                                        shuffled=config.shuffled)
+                                        shuffled=config.shuffled,
+                                        logger=self.logger)
 
     def _monitor_hotkeys(self):
         hotkeys = {
