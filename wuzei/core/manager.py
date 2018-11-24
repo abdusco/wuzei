@@ -24,10 +24,10 @@ class WallpaperManager:
         self._blurred = blurred
         self._shuffled = shuffled
         self._wallpaper: str = None
-        self._source: str = None
         self._screen_geometry = windesktop.get_screen_size()
 
         self.sources = Dispenser(paths)
+        self.images = None
         self.source = self.sources.current
 
     @property
@@ -47,11 +47,10 @@ class WallpaperManager:
         return self._source
 
     @source.setter
-    def source(self, value):
-        self._source = value
-        self.images = Dispenser(find_images(value),
+    def source(self, path: str):
+        self._source = path
+        self.images = Dispenser(find_images(path),
                                 shuffled=self._shuffled)
-
         if self._shuffled:
             image = self.images.random()
         else:
@@ -61,10 +60,8 @@ class WallpaperManager:
     def sync(self, path: str):
         # prevent unnecessary syncs for inactive sources
         if self._source != path:
-            self.logger('IGNORED', path)
-            return
-        self.images = Dispenser(find_images(self._source),
-                                shuffled=self._shuffled)
+            return self.logger('WONT SYNC', path)
+        self.source = path
         self.logger('SYNCED', self._source)
 
     def next_source(self):
@@ -74,16 +71,10 @@ class WallpaperManager:
         self.source = self.sources - 1
 
     def next_wallpaper(self):
-        next = self.images + 1
-        if self._blurred:
-            return self.blur(image_path=next)
-        self.wallpaper = next
+        self.wallpaper = self.images + 1
 
     def prev_wallpaper(self):
-        prev = self.images - 1
-        if self._blurred:
-            return self.blur(image_path=prev)
-        self.wallpaper = prev
+        self.wallpaper = self.images - 1
 
     def toggle_shuffle(self):
         if self._shuffled:
