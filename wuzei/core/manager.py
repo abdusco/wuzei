@@ -59,6 +59,15 @@ class WallpaperManager:
         else:
             self.wallpaper = image
 
+    def sync(self, path: str):
+        # prevent unnecessary syncs for inactive sources
+        if self._source != path:
+            self.logger('IGNORED', path)
+            return
+        self.images = Dispenser(find_images(self._source),
+                                shuffled=self._shuffled)
+        self.logger('SYNCED', self._source)
+
     def next_source(self):
         self.source = self.sources + 1
 
@@ -111,5 +120,5 @@ class WallpaperManager:
             image_path = self.wallpaper
         if not pathlib.Path(image_path).exists():
             raise FileNotFoundError(image_path)
-        print('WP:', image_path)
+        self.logger('WP', image_path)
         windesktop.change_wallpaper(image_path, True)

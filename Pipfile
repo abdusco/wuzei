@@ -9,6 +9,7 @@ mouse = "*"
 pywin32 = "*"
 Pillow = "*"
 pymitter = "*"
+watcher = "*"
 
 [dev-packages]
 

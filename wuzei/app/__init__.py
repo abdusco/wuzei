@@ -12,6 +12,7 @@ from wuzei.core.manager import WallpaperManager
 from wuzei.utils.session import SessionEvent, SessionMonitor
 from wuzei.utils.singleton import InterruptibleEvent
 from wuzei.utils.windesktop import WindowSpy
+from wuzei.utils.winfs import DirectoryWatcher
 
 
 class Action(Enum):
@@ -50,8 +51,8 @@ class Wuzei:
         self.paused = config.paused
         self.interval = config.interval
 
-        sources = [path for key, path in config.sources.items()]
-        self.manager = WallpaperManager(paths=sources,
+        self._sources = [path for key, path in config.sources.items()]
+        self.manager = WallpaperManager(paths=self._sources,
                                         cache_dir=config.cache_dir,
                                         blurred=config.blurred,
                                         shuffled=config.shuffled)
@@ -78,6 +79,25 @@ class Wuzei:
         sm.subscribe(SessionEvent.SESSION_LOCK, self.ee.emit, 'lock')
         sm.subscribe(SessionEvent.SESSION_UNLOCK, self.ee.emit, 'unlock')
         sm.listen()
+
+    def _monitor_dirs(self):
+        def make_callback(path: str):
+            def cb(*args):
+                self.logger('SOURCE CHANGED', path)
+                time.sleep(10)
+                self.manager.sync(path)
+
+            return cb
+
+        for path in self._sources:
+            callback = make_callback(path)
+            watcher = DirectoryWatcher(path=path,
+                                       on_deleted=callback,
+                                       on_created=callback,
+                                       on_renamed=callback)
+
+        while True:
+            time.sleep(10)
 
     def _setup_timer(self):
         while True and self.interval > 0:
@@ -156,6 +176,7 @@ class Wuzei:
             timer=threading.Thread(target=self._setup_timer),
             rehook=threading.Thread(target=self._rehook),
             mouse=threading.Thread(target=self._hook_mouse),
+            directory=threading.Thread(target=self._monitor_dirs),
         )
 
         self.threads = threads
