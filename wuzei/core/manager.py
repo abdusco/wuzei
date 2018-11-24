@@ -88,8 +88,8 @@ class WallpaperManager:
             image_path = self._wallpaper
         long_side = max(self._screen_geometry)
         blurred_image = blur(image_path,
-                             size=(long_side, long_side),
                              radius=long_side // 10,
+                             size=(long_side, long_side),
                              save_dir=self._cache_dir,
                              use_cache=True)
         self._set_wallpaper(str(blurred_image))

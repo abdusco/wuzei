@@ -4,22 +4,29 @@ from PIL import Image
 from PIL.ImageFilter import GaussianBlur
 
 
-def blur(image_path: str, size: tuple, radius=200, save_dir: str = None, use_cache=True) -> Path:
-    image = Path(image_path)
-    save_path = image.with_suffix('.blurred.jpg')
-
+def blur(image_path: str,
+         radius=200,
+         size: tuple = None,
+         save_dir: str = None,
+         use_cache=True) -> Path:
+    img_path = Path(image_path)
     # skip PNGs
-    if image.suffix == '.png':
-        return image
+    if img_path.suffix == '.png':
+        return img_path
+
+    modified = int(img_path.stat().st_mtime)
+    save_path = img_path.with_suffix(f'.v{modified}.blurred.jpg')
 
     if save_dir:
-        save_path = Path(save_dir) / (save_path.stem + save_path.suffix)
+        save_path = Path(save_dir) / save_path.name
 
     if use_cache and save_path.exists():
         return save_path
 
-    with Image.open(image) as img, \
+    with Image.open(img_path) as img, \
             open(save_path, mode='w') as destination:
+        if not size:
+            size = max(img.size)
         img.thumbnail(size, resample=Image.NEAREST)
         blurred = img.filter(GaussianBlur(radius=radius))
         blurred.save(destination, 'JPEG')
