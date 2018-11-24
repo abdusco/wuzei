@@ -29,7 +29,9 @@ class Action(Enum):
     UNSHUFFLE = auto()
     TOGGLE_SHUFFLE = auto()
 
+    EXIT = auto()
     PAUSE = auto()
+    VIEW = auto()
 
 
 class Wuzei:
@@ -66,8 +68,9 @@ class Wuzei:
             'alt+shift+s': Action.TOGGLE_SHUFFLE,
             'alt+shift+b': Action.TOGGLE_BLUR,
             'alt+shift+/': Action.BLUR,
-            'alt+shift+\\': 'exit',
-            'alt+shift+p': 'pause',
+            'alt+shift+\\': Action.EXIT,
+            'alt+shift+p': Action.PAUSE,
+            'alt+shift+v': Action.VIEW,
         }
         for combination, action in hotkeys.items():
             keyboard.add_hotkey(combination,
@@ -135,12 +138,7 @@ class Wuzei:
 
     def _on_hotkey(self, action: Action):
         self.logger('HOTKEY', action)
-        if action == 'exit':
-            self.exit()
-        elif action == 'pause':
-            self.pause()
-        else:
-            self.handle_action(action)
+        self.handle_action(action)
 
     def handle_action(self, action: Action):
         try:
@@ -152,7 +150,9 @@ class Wuzei:
                 Action.TOGGLE_SHUFFLE: self.manager.toggle_shuffle,
                 Action.TOGGLE_BLUR: self.manager.toggle_blur,
                 Action.BLUR: self.manager.blur,
-                Action.PAUSE: self.pause
+                Action.PAUSE: self.pause,
+                Action.VIEW: self.view_current,
+                Action.EXIT: self.exit,
             }
             handlers[action]()
             self.last_change = time.time()
@@ -163,6 +163,9 @@ class Wuzei:
     def pause(self):
         self.paused = not self.paused
         self.logger('PAUSED' if self.paused else 'RUNNING')
+
+    def view_current(self):
+        os.startfile(self.manager.wallpaper)
 
     def exit(self):
         self.running_event.set()

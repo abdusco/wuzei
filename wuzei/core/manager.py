@@ -35,9 +35,12 @@ class WallpaperManager:
         return self._wallpaper
 
     @wallpaper.setter
-    def wallpaper(self, value: str):
-        self._wallpaper = value
-        self._set_wallpaper(value)
+    def wallpaper(self, image_path: str):
+        self._wallpaper = image_path
+        if self._blurred:
+            self.blur(image_path)
+        else:
+            self._set_wallpaper(image_path)
 
     @property
     def source(self):
@@ -53,11 +56,7 @@ class WallpaperManager:
             image = self.images.random()
         else:
             image = self.images.current
-
-        if self._blurred:
-            self.blur(image_path=image)
-        else:
-            self.wallpaper = image
+        self.wallpaper = image
 
     def sync(self, path: str):
         # prevent unnecessary syncs for inactive sources
@@ -95,19 +94,19 @@ class WallpaperManager:
 
     def blur(self, image_path: str = None):
         if not image_path:
-            image_path = self.images.current
+            image_path = self._wallpaper
         long_side = max(self._screen_geometry)
         blurred_image = blur(image_path,
                              size=(long_side, long_side),
                              radius=long_side // 10,
                              save_dir=self._cache_dir,
                              use_cache=True)
-        self.wallpaper = blurred_image
+        self._set_wallpaper(str(blurred_image))
         self._blurred = True
 
     def unblur(self):
-        self.wallpaper = self.images.current
         self._blurred = False
+        self._set_wallpaper(self._wallpaper)
 
     def toggle_blur(self):
         if self._blurred:
