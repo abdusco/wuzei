@@ -18,7 +18,23 @@ interval = 20
 blurred = yes
 shuffled = yes
 paused = no
+hook_refresh_interval = 60
+
+[hotkeys]
+# Reference
+# https://github.com/boppreh/keyboard#keyboardall_modifiers
+prev = alt+shift+[
+next = alt+shift+]
+prev_source = ctrl+alt+shift+[
+next_source = ctrl+alt+shift+]
+toggle_shuffle = alt+shift+s
+toggle_blur = alt+shift+b
+blur = alt+shift+/
+exit = alt+shift+\
+pause = alt+shift+p
+view = alt+shift+v
 
 [sources]
 nature = d:\wallpapers\nature
+abstract = d:\wallpapers\abstract
 ```
