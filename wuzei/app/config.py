@@ -16,6 +16,7 @@ class WuzeiConfig:
         self.shuffled: bool = parsed['config'].getboolean('shuffled', True)
         self.paused: bool = parsed['config'].getboolean('paused', False)
         self.interval: int = max(30, parsed['config'].getint('interval', 60 * 10))
+        self.blur_on_lock: bool = parsed['config'].getboolean('blur_on_lock', True)
         self.hook_refresh_interval: int = parsed['config'].getint('hook_refresh_interval', 60)
 
         self.hotkeys = {}

@@ -187,13 +187,14 @@ class Wuzei:
 
     def run(self):
         threads = dict(
-                session=threading.Thread(target=self._monitor_session),
                 keyboard=threading.Thread(target=self._monitor_hotkeys),
                 timer=threading.Thread(target=self._setup_timer),
                 rehook=threading.Thread(target=self._rehook),
                 mouse=threading.Thread(target=self._hook_mouse),
                 directory=threading.Thread(target=self._monitor_dirs),
         )
+        if self.config.blur_on_lock:
+            threads['session'] = threading.Thread(target=self._monitor_session)
 
         self.threads = threads
         for name, th in threads.items():
