@@ -18,7 +18,11 @@ class WuzeiConfig:
         self.interval: int = max(30, parsed['config'].getint('interval', 60 * 10))
         self.hook_refresh_interval: int = parsed['config'].getint('hook_refresh_interval', 60)
 
-        self.hotkeys: typing.Dict = dict(parsed['hotkeys'])
+        self.hotkeys = {}
+        if 'hotkeys' in parsed:
+            self.hotkeys = {name: hotkey
+                            for name, hotkey in parsed['hotkeys'].items()
+                            if hotkey}
         self._validate_hotkeys()
 
     def _validate_hotkeys(self):

@@ -23,6 +23,7 @@ hook_refresh_interval = 60
 [hotkeys]
 # Reference
 # https://github.com/boppreh/keyboard#keyboardall_modifiers
+# Leave a hotkey empty or remove it to disable
 prev = alt+shift+[
 next = alt+shift+]
 prev_source = ctrl+alt+shift+[
