@@ -1,6 +1,10 @@
 # Wuzei
 Wallpaper manager for Windows. Like Muzei on Android but more primitive.
 
+## Download
+Latest version can be downloaded [here][latest].  
+Previous releases can be found on [Releases][releases] tab. 
+
 ## Usage
 Install dependencies and run. The app defaults to `./config.ini`, 
 gives error if it doesn't exists and not specified as argument.
@@ -39,3 +43,6 @@ view = alt+shift+v
 nature = d:\wallpapers\nature
 abstract = d:\wallpapers\abstract
 ```
+
+[latest]: https://github.com/abdusco/wuzei/releases/latest
+[releases]: https://github.com/abdusco/wuzei/releases
