@@ -190,13 +190,13 @@ class Wuzei:
                 keyboard=threading.Thread(target=self._monitor_hotkeys),
                 timer=threading.Thread(target=self._setup_timer),
                 rehook=threading.Thread(target=self._rehook),
-                mouse=threading.Thread(target=self._hook_mouse),
         )
         if self.config.blur_on_lock:
             threads['session'] = threading.Thread(target=self._monitor_session)
         if self.config.monitor_dirs:
             threads['directory'] = threading.Thread(target=self._monitor_dirs)
-
+        if self.config.hook_mouse:
+            threads['mouse'] = threading.Thread(target=self._hook_mouse)
 
         self.threads = threads
         for name, th in threads.items():

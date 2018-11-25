@@ -18,6 +18,7 @@ class WuzeiConfig:
         self.interval: int = max(30, parsed['config'].getint('interval', 60 * 10))
         self.blur_on_lock: bool = parsed['config'].getboolean('blur_on_lock', True)
         self.monitor_dirs: bool = parsed['config'].getboolean('monitor_dirs', True)
+        self.hook_mouse: bool = parsed['config'].getboolean('hook_mouse', True)
         self.hook_refresh_interval: int = parsed['config'].getint('hook_refresh_interval', 60)
 
         self.hotkeys = {}
