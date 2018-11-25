@@ -51,6 +51,7 @@ class Wuzei:
         self.running_event = InterruptibleEvent()
         self.last_change = time.time()
 
+        self.config = config
         self.paused = config.paused
         self.interval = config.interval
 
@@ -62,18 +63,19 @@ class Wuzei:
                                         logger=self.logger)
 
     def _monitor_hotkeys(self):
-        hotkeys = {
-            'alt+shift+[': Action.PREV_WALLPAPER,
-            'alt+shift+]': Action.NEXT_WALLPAPER,
-            'ctrl+alt+shift+[': Action.PREV_SOURCE,
-            'ctrl+alt+shift+]': Action.NEXT_SOURCE,
-            'alt+shift+s': Action.TOGGLE_SHUFFLE,
-            'alt+shift+b': Action.TOGGLE_BLUR,
-            'alt+shift+/': Action.BLUR,
-            'alt+shift+\\': Action.EXIT,
-            'alt+shift+p': Action.PAUSE,
-            'alt+shift+v': Action.VIEW,
-        }
+        actions = dict(
+                prev=Action.PREV_WALLPAPER,
+                next=Action.NEXT_WALLPAPER,
+                prev_source=Action.PREV_SOURCE,
+                next_source=Action.NEXT_SOURCE,
+                toggle_shuffle=Action.TOGGLE_SHUFFLE,
+                toggle_blur=Action.TOGGLE_BLUR,
+                blur=Action.BLUR,
+                exit=Action.EXIT,
+                pause=Action.PAUSE,
+                view=Action.VIEW,
+        )
+        hotkeys = {hotkey: actions[name] for name, hotkey in self.config.hotkeys.items()}
         for combination, action in hotkeys.items():
             keyboard.add_hotkey(combination,
                                 callback=self.ee.emit,
@@ -137,7 +139,7 @@ class Wuzei:
 
     def _rehook(self):
         while True:
-            time.sleep(60)
+            time.sleep(self.config.hook_refresh_interval)
             keyboard.stash_state()
 
     def _hook_mouse(self):
@@ -183,12 +185,12 @@ class Wuzei:
 
     def run(self):
         threads = dict(
-            session=threading.Thread(target=self._monitor_session),
-            keyboard=threading.Thread(target=self._monitor_hotkeys),
-            timer=threading.Thread(target=self._setup_timer),
-            rehook=threading.Thread(target=self._rehook),
-            mouse=threading.Thread(target=self._hook_mouse),
-            directory=threading.Thread(target=self._monitor_dirs),
+                session=threading.Thread(target=self._monitor_session),
+                keyboard=threading.Thread(target=self._monitor_hotkeys),
+                timer=threading.Thread(target=self._setup_timer),
+                rehook=threading.Thread(target=self._rehook),
+                mouse=threading.Thread(target=self._hook_mouse),
+                directory=threading.Thread(target=self._monitor_dirs),
         )
 
         self.threads = threads
