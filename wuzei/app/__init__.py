@@ -12,6 +12,7 @@ from wuzei.app.config import WuzeiConfig
 from wuzei.core.manager import WallpaperManager
 from wuzei.utils.session import SessionEvent, SessionMonitor
 from wuzei.utils.singleton import InterruptibleEvent
+from wuzei.utils.throttle import throttle
 from wuzei.utils.windesktop import WindowSpy
 from wuzei.utils.winfs import DirectoryWatcher
 
@@ -89,6 +90,7 @@ class Wuzei:
 
     def _monitor_dirs(self):
         def make_callback(path: str):
+            @throttle(cooldown=10)
             def cb(*args):
                 self.logger('SOURCE CHANGED', path)
                 time.sleep(10)
