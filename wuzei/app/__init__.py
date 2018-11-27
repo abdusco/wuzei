@@ -89,7 +89,7 @@ class Wuzei:
         sm.listen()
 
     def _monitor_dirs(self):
-        cooldown = self.config.change_trigger_cooldown
+        cooldown = self.config.dir_monitor_cooldown
 
         def make_callback(path: str):
             @throttle(cooldown=cooldown + 5)
