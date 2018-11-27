@@ -6,7 +6,37 @@ import win32process
 import pythoncom
 import pywintypes
 import win32com
+import win32con
 from win32com.shell import shell, shellcon
+
+
+class Window:
+    def __init__(self, class_name: str, title: str, message_map: dict, style: int = None):
+        if not style:
+            style = win32con.WS_SYSMENU
+        self.style = style
+        self.title = title
+        self.class_name = class_name
+        self.message_map = message_map
+        self._create()
+
+    def _create(self):
+        w_class = win32gui.WNDCLASS()
+        self.h_inst = w_class.hInstance = win32gui.GetModuleHandle(None)
+        w_class.lpszClassName = self.class_name
+        w_class.lpfnWndProc = self.message_map
+        self.atom = win32gui.RegisterClass(w_class)
+        # w_class.style = win32con.CS_VREDRAW | win32con.CS_HREDRAW
+        # w_class.hCursor = win32gui.LoadCursor(0, win32con.IDC_ARROW)
+        # w_class.hbrBackground = win32con.COLOR_WINDOW
+        # Create the Window.
+        self.h_window = win32gui.CreateWindow(self.atom,
+                                              self.title,
+                                              self.style,
+                                              0, 0, win32con.CW_USEDEFAULT, win32con.CW_USEDEFAULT, 0, 0,
+                                              self.h_inst,
+                                              None)
+        win32gui.UpdateWindow(self.h_window)
 
 
 class WindowSpy:
@@ -41,8 +71,14 @@ class WindowSpy:
     def close(self):
         win32gui.CloseWindow(self.h_window)
 
+    def send_message(self, *params):
+        return ctypes.windll.user32.SendMessageW(self.h_window, *params)
+
     def __eq__(self, other):
         return self.h_window == other.h_window
+
+    def __int__(self):
+        return self.h_window
 
     @classmethod
     def from_mouse_pos(cls):
@@ -147,9 +183,9 @@ def enable_active_desktop():
             WinAPI.SendMessageTimeout(WinAPI.FindWindow("Progman", null), 0x52c, IntPtr.Zero, IntPtr.Zero, 0, 500, out result);
         }
     """
-    progman = ctypes.windll.User32.FindWindowW('Progman', 0)
+    progman = WindowSpy.find(class_name='Progman')
     cryptic_params = (0x52c, 0, 0, 0, 500, None)
-    ctypes.windll.User32.SendMessageTimeoutW(progman, *cryptic_params)
+    ctypes.windll.User32.SendMessageTimeoutW(progman.h_window, *cryptic_params)
 
 
 def change_wallpaper(abs_path_to_image: str, activate_active_desktop: bool = False):
