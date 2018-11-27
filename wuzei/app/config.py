@@ -20,6 +20,7 @@ class WuzeiConfig:
         self.monitor_dirs: bool = parsed['config'].getboolean('monitor_dirs', True)
         self.hook_mouse: bool = parsed['config'].getboolean('hook_mouse', True)
         self.hook_refresh_interval: int = parsed['config'].getint('hook_refresh_interval', 60)
+        self.change_trigger_cooldown: int = parsed['config'].getint('change_trigger_cooldown', 20)
 
         self.hotkeys = {}
         if 'hotkeys' in parsed:
