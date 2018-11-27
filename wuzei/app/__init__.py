@@ -89,11 +89,13 @@ class Wuzei:
         sm.listen()
 
     def _monitor_dirs(self):
+        cooldown = self.config.change_trigger_cooldown
+
         def make_callback(path: str):
-            @throttle(cooldown=10)
+            @throttle(cooldown=cooldown * 1.5)
             def cb(*args):
                 self.logger('SOURCE CHANGED', path)
-                time.sleep(10)
+                time.sleep(cooldown)
                 self.manager.sync(path)
 
             return cb

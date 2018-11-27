@@ -27,7 +27,7 @@ class WallpaperManager:
         self._screen_geometry = windesktop.get_screen_size()
 
         self.sources = Dispenser(paths)
-        self.images = None
+        self.images: Dispenser = None
         self.source = self.sources.current
 
     @property
@@ -61,7 +61,7 @@ class WallpaperManager:
         # prevent unnecessary syncs for inactive sources
         if self._source != path:
             return self.logger('WONT SYNC', path)
-        self.source = path
+        self.images.things = find_images(path)
         self.logger('SYNCED', self._source)
 
     def next_source(self):
