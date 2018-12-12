@@ -2,6 +2,7 @@ import ctypes
 import win32api
 import win32gui
 import win32process
+from itertools import chain
 
 import pythoncom
 import pywintypes
@@ -92,10 +93,10 @@ class WindowSpy:
                 h_list.append(handle)
             w = cls(handle)
             if class_name:
-                if w.window_class != class_name:
+                if class_name not in w.window_class:
                     return True  # continue enumeration
             if title:
-                if w.title != title:
+                if title not in w.title:
                     return True  # continue enumeration
             h_list.append(handle)
 
@@ -135,12 +136,12 @@ class WindowSpy:
 
     @classmethod
     def desktop(cls):
-        for h_worker in cls.find_handles(class_name='WorkerW'):
-            worker = cls(h_worker)
-            folder_view = worker.find_child(class_name='SysListView32', title='FolderView')
-            if not folder_view:
-                continue
-            return folder_view
+        progman = cls.find(class_name='Progman')
+        parents = chain([progman], map(cls, cls.find_handles(class_name='WorkerW')))
+        for p in parents:
+            folder_view = p.find_child(class_name='SysListView32', title='FolderView')
+            if folder_view:
+                return folder_view
         return None
 
     @classmethod
