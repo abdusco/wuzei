@@ -10,6 +10,7 @@ pywin32 = "*"
 Pillow = "*"
 pymitter = "*"
 watcher = "*"
+psutil = "*"
 
 [dev-packages]
 
