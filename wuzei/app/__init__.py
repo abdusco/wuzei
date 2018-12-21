@@ -50,7 +50,7 @@ class Wuzei:
         self.ee.on('timer', self._on_timer)
         self.threads = []
         self.running_event = InterruptibleEvent()
-        self.last_change = time.time()
+        self._update_time()
 
         self.config = config
         self.paused = config.paused
@@ -112,8 +112,9 @@ class Wuzei:
 
     def _setup_timer(self):
         while True and self.interval > 0:
-            time.sleep(self.interval)
-            if abs(time.time() - self.last_change) < self.interval:
+            time.sleep(1)
+            elapsed = time.time() - self.last_change
+            if elapsed < self.interval:
                 continue
             if not self.paused:
                 self.ee.emit('timer')
@@ -121,6 +122,7 @@ class Wuzei:
     def _on_timer(self):
         self.logger('TIMER')
         self.manager.next_wallpaper()
+        self._update_time()
 
     def _on_lock(self):
         self.logger('LOCKED')
@@ -170,10 +172,13 @@ class Wuzei:
                 Action.EXIT: self.exit,
             }
             handlers[action]()
-            self.last_change = time.time()
+            self._update_time()
         except KeyError:
             self.logger('Unhandled action', action)
             raise NotImplementedError
+
+    def _update_time(self):
+        self.last_change = time.time()
 
     def pause(self):
         self.paused = not self.paused
