@@ -112,8 +112,9 @@ class Wuzei:
 
     def _setup_timer(self):
         while True and self.interval > 0:
-            time.sleep(self.interval)
-            if abs(time.time() - self.last_change) < self.interval:
+            time.sleep(1)
+            elapsed = time.time() - self.last_change
+            if elapsed < self.interval:
                 continue
             if not self.paused:
                 self.ee.emit('timer')
